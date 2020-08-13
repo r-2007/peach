@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="https://github.com/r-2007/peach/blob/master/peach.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/r-2007/peach/blob/master/peach.xsd">
+	
+	<!-- Define our file format DDL -->
+	<DataModel name="Client_hello">	
+
+	<Block name="DTLS_Record_Layer" minOccurs="1" maxOccurs="1">
+
+	<Number name="Content_type" value="16" valueType="hex" size="8" signed="false" />
+	<Number name="Record_layer_version" value="fe fd" valueType="hex" size="16" signed="false" mutable="false"/>
+	<Number name="Epoch"  size="16" signed="false" />
+	<Number name="Sequence_Number" size="48" signed="false" />
+	<Number name="Length_of_DTLS_record_data" size="16" signed="false" />
+	
+	</Block>
+
+
+
+
+	<Block name="Client_Hello" minOccurs="1" maxOccurs="1">
+	
+	<Number name="Handshake_type" value="01" valueType="hex" size="8" signed="false" />
+	<Number name="Length_of_handshake_msg" size="24" signed="false" />
+	<Number name="Msg_sequence" size="16" signed="false" />
+	<Number name="Fragment_offset" size="24" signed="false" />
+	<Number name="Fragment_Length" size="24" signed="false" />
+	<Number name="Handshake_version" value="fe fd" valueType="hex" size="16" signed="false" mutable="false" />
+	<Blob name="Random" length="32" />
+	<Number name="Session_ID_Length" size="8" signed="false" />
+	<Number name="Cookie_Length" size="8" signed="false" />
+
+	<Number name="Cipher_suites_Length" size="16" signed="false" >
+	<Relation type="size" of="Cipher_suites" />
+	</Number>	
+	<Blob name="Cipher_suites" />
+
+	<Number name="Compression_method_Length" size="8" signed="false" >
+	<Relation type="size" of="Compression_methods" />
+	</Number>	
+	<Blob name="Compression_methods" />
+	
+	</Block>		
+
+	</DataModel>
+
+
+
+
+	
+	<!-- Define a simple state machine that will write the file and 
+		then launch a program using the FileWriterLauncher publisher -->
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+
+			<!-- Write out contents of file -->
+			<Action type="output">
+				<DataModel ref="Client_hello" /> 				            		 	
+			</Action>
+			
+			<!-- Close file -->
+			<Action type="close" />			
+			
+		</State>
+	</StateModel>
+	
+	
+	
+	<Test name="Default">				
+		<StateModel ref="State"/>
+		
+		<!-- Configure our publisher with correct filename to write too -->
+		<Publisher class="File">
+			<Param name="FileName" value="Client_hello" />			
+		</Publisher>
+
+		<Logger class="Filesystem">
+			<Param name="Path" value="Logs" />
+		</Logger>
+	</Test>		
+	
+</Peach>
+<!-- end -->
